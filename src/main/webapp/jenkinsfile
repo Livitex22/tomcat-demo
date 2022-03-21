@@ -1,0 +1,23 @@
+node {
+    def mvnHome = tool name: 'maven-home', type: 'maven'
+    stage('SCM-Checkout') { 
+        git branch: 'main', credentialsId: 'Git-Credential', url: 'https://github.com/Livitex22/tomcat-demo.git'
+    }
+    stage('mvn clean') { 
+        sh "${mvnHome}/bin/mvn clean"
+    }
+    stage('mvn compile') { 
+        sh "${mvnHome}/bin/mvn compile"
+    }
+    stage('mvn test') { 
+        sh "${mvnHome}/bin/mvn test"
+    }
+    stage('mvn package') { 
+        sh "${mvnHome}/bin/mvn package"
+    }
+    stage('Tomcat-Deployment') { 
+        sshagent(['ec2-user']) {
+            sh "scp -o StrictHostKeyChecking=no target/tomcat-demo.war ec2-user@3.89.187.41:/opt/tomcat/webapps"
+        }
+    }
+}
